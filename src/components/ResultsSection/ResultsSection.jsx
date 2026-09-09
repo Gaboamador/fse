@@ -1,0 +1,35 @@
+import SearchResult from '../SearchResult.jsx';
+
+export default function ResultsSection({ results }) {
+  const bestResult = results[0] ?? null;
+  const alternatives = results.slice(1);
+
+  if (!bestResult) return null;
+
+  return (
+    <section className="results-section">
+      <div className="section-title">
+        <h2>Mejor resultado</h2>
+      </div>
+
+      <SearchResult result={bestResult} primary />
+
+      {alternatives.length > 0 && (
+        <details className="alternative-results">
+          <summary>¿Este no es el episodio que buscabas? Ver otras opciones</summary>
+
+          <div className="alternative-list">
+            {alternatives.map((result, index) => (
+              <SearchResult
+                key={`${result.episode_id}-${index}`}
+                result={result}
+                rank={index + 2}
+                compact
+              />
+            ))}
+          </div>
+        </details>
+      )}
+    </section>
+  );
+}

@@ -1,0 +1,67 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  width: 100%;
+  background: #111;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.inner {
+  width: min(1050px, calc(100% - 32px));
+  min-height: 64px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.friendsWord {
+  display: inline-flex;
+  align-items: center;
+  font-family: 'Patrick Hand', cursive;
+  font-size: 1.35em;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  font-style: italic;
+}
+
+.searchEngine {
+  white-space: nowrap;
+}
+
+.friendUnit {
+  display: inline-flex;
+  align-items: center;
+}
+
+.dot {
+  width: 0.175em;
+  height: 0.175em;
+  margin-top: 0.18em;
+  margin-left: 0.25em;
+  margin-right: 0.1em;
+  margin-bottom: 0;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.dotRed {
+  background: #e91e23;
+}
+
+.dotBlue {
+  background: #02b2e7;
+}
+
+.dotYellow {
+  background: #fabc16;
+}

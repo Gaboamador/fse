@@ -123,7 +123,7 @@ export default function SearchResult({ result, rank, primary = false, compact = 
   }
 
   return (
-    <article className={`result-card ${primary ? 'result-card-primary' : ''} ${compact ? 'result-card-compact' : ''}`}>
+    <article className={`result-card ${primary ? 'result-card-primary' : ''} ${compact ? 'result-card-compact' : ''} ${showFullEpisode ? 'result-card-expanded' : ''}`}>
       {!primary && <div className="result-rank">#{rank}</div>}
       <div className="result-main">
         <div className="result-meta">

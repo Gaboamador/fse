@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap');
+
 :root {
   font-family:
     Inter,
@@ -34,25 +36,12 @@ input {
   padding: 48px 0 100px;
 }
 
-.eyebrow {
-  margin: 0 0 10px;
-  color: #8f8f8f;
-  font-size: 12px;
-  letter-spacing: 0.16em;
-}
-
-h1 {
-  margin: 0;
-  font-size: clamp(40px, 8vw, 76px);
-  line-height: 0.95;
-  letter-spacing: -0.055em;
-}
-
 .lede {
-  max-width: 700px;
+  margin: 0 0 24px 0;
   color: #aaa;
   font-size: 18px;
   line-height: 1.55;
+  text-align: justify;
 }
 
 .search-panel {
@@ -174,28 +163,6 @@ textarea {
   border-radius: 10px;
 }
 
-.examples {
-  display: flex;
-  gap: 8px;
-
-  padding-bottom: 10px;
-
-  overflow-x: auto;
-}
-
-.examples button {
-  padding: 7px 12px;
-
-  color: #aaa;
-  font-size: 12px;
-  white-space: nowrap;
-
-  background: #111;
-  border: 1px solid #2c2c2c;
-  border-radius: 999px;
-
-  cursor: pointer;
-}
 
 section {
   margin-top: 38px;
@@ -431,6 +398,7 @@ section {
 }
 
 @media (max-width: 620px) {
+
   .shell {
     width: min(100% - 20px, 1050px);
     padding-top: 28px;
@@ -442,6 +410,24 @@ section {
 
   .result-card-primary {
     grid-template-columns: 1fr;
+  }
+
+  .result-card-expanded:not(.result-card-primary) .result-main {
+    display: contents;
+  }
+
+  .result-card-expanded:not(.result-card-primary) .result-meta,
+  .result-card-expanded:not(.result-card-primary) .scene-heading,
+  .result-card-expanded:not(.result-card-primary) .characters,
+  .result-card-expanded:not(.result-card-primary) .preview,
+  .result-card-expanded:not(.result-card-primary) .result-actions,
+  .result-card-expanded:not(.result-card-primary) .episode-error {
+    grid-column: 2;
+  }
+
+  .result-card-expanded:not(.result-card-primary) .full-episode {
+    grid-column: 1 / -1;
+    width: 100%;
   }
 
   .section-title {
@@ -462,4 +448,5 @@ section {
   .enter-hint {
     display: none;
   }
+
 }
