@@ -37,6 +37,8 @@ jobs:
         run: npm ci
 
       - name: Build
+        env:
+          VITE_SEARCH_API_URL: https://rough-credit-589b.gaboamador.workers.dev
         run: npm run build
 
       - name: Setup Pages
