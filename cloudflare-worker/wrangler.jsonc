@@ -1,0 +1,15 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "rough-credit-589b",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-09",
+  "ai": {
+    "binding": "AI"
+  },
+  "vectorize": [
+    {
+      "binding": "VECTORIZE",
+      "index_name": "friends-v10-gemma-long10-512"
+    }
+  ]
+}

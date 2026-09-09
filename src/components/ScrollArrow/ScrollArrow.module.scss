@@ -1,0 +1,60 @@
+.arrow {
+  position: fixed;
+  right: 1rem;
+  bottom: calc(4.75rem + env(safe-area-inset-bottom));
+  z-index: 20;
+
+  display: grid;
+  place-items: center;
+
+  width: 40px;
+  height: 40px;
+  padding: 0;
+
+  color: #ddd;
+  font-size: 2rem;
+  line-height: 1;
+
+  background: #171717;
+  border: 1px solid #343434;
+  border-radius: 50%;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.arrow:active {
+  transform: scale(0.94);
+}
+
+.arrow:focus-visible {
+  outline: 2px solid #ddd;
+  outline-offset: 3px;
+}
+
+@media (hover: hover) {
+  .arrow:hover {
+    color: #fff;
+    background: #202020;
+    border-color: #444;
+    transform: translateY(-2px);
+  }
+}
+
+@media (min-width: 800px) {
+  .arrow {
+    right: 1rem;
+    bottom: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arrow {
+    transition: none;
+  }
+}
