@@ -19,7 +19,7 @@ npm run dev
 La URL del backend se configura en `.env.local`:
 
 ```text
-VITE_SEARCH_API_URL=https://rough-credit-589b.gaboamador.workers.dev
+VITE_SEARCH_API_URL
 ```
 
 ## Build
