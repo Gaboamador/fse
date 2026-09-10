@@ -41,7 +41,7 @@ export async function initializeSearch() {
 
   try {
     const health = await requestCloudflare('/health', { method: 'GET', headers: {} });
-    emitStatus('ready', 'Listo · búsqueda en servidor');
+    emitStatus('ready', 'Online');
     return health;
   } catch (error) {
     emitStatus('error', error?.message ?? String(error));
@@ -60,7 +60,7 @@ export async function searchFriends(query, options = {}) {
       method: 'POST',
       body: JSON.stringify({ query: trimmed, ...options }),
     });
-    emitStatus('ready', 'Listo · búsqueda en servidor');
+    emitStatus('ready', 'Online');
     return result;
   } catch (error) {
     emitStatus('error', error?.message ?? String(error));
