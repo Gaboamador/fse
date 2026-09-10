@@ -672,6 +672,9 @@ function matchingMotifEpisodes(motif) {
 function compareRanked(a, b) {
   if (Boolean(a.exact_lexical_match) !== Boolean(b.exact_lexical_match)) return a.exact_lexical_match ? -1 : 1;
   if (Boolean(a.tolerant_lexical_match) !== Boolean(b.tolerant_lexical_match)) return a.tolerant_lexical_match ? -1 : 1;
+  const titleA = Number(a.title_match_score ?? 0);
+  const titleB = Number(b.title_match_score ?? 0);
+  if (titleA !== titleB) return titleB - titleA;
   if (Boolean(a.motif_origin) !== Boolean(b.motif_origin)) return a.motif_origin ? -1 : 1;
   if (Boolean(a.motif_match) !== Boolean(b.motif_match)) return a.motif_match ? -1 : 1;
   return b.score - a.score;
@@ -721,7 +724,7 @@ function contextualPenalty(chunk) {
 
 const GEMMA_MODEL = '@cf/google/embeddinggemma-300m';
 const VECTOR_TOP_K = 100;
-const BACKEND_ENGINE_VERSION = 'v10-gemma-full-long10-512-backend-v2-fuzzy-v3';
+const BACKEND_ENGINE_VERSION = 'v10-gemma-full-long10-512-backend-v2-fuzzy-v3-title-v1';
 
 const long10Chunks = FRIENDS_RUNTIME.chunks;
 const long10Normalized = FRIENDS_RUNTIME.normalized;
@@ -731,6 +734,77 @@ const long10TokenPostings = FRIENDS_RUNTIME.tokenPostings;
 const long10IdToIndex = FRIENDS_RUNTIME.idToIndex;
 const long10EpisodeChunkIndices = FRIENDS_RUNTIME.episodeChunkIndices;
 const long10EpisodeEvidence = FRIENDS_RUNTIME.episodeEvidence;
+
+
+const TITLE_BOILERPLATE_WORDS = new Set([
+  ...ENGLISH_FUNCTION_WORDS,
+  'one', 'where', 'after', 'part', 'parts',
+]);
+
+const episodeTitleMeta = new Map();
+const titleTokenEpisodeFreq = Object.create(null);
+
+for (const [episodeId, indices] of Object.entries(long10EpisodeChunkIndices)) {
+  const firstIndex = indices?.[0];
+  if (!Number.isInteger(firstIndex)) continue;
+  const chunk = long10Chunks[firstIndex];
+  if (!chunk) continue;
+
+  const normalizedTitle = normalizeText(chunk.title);
+  const titleTokens = tokenize(normalizedTitle);
+  const titleTokenSet = new Set(titleTokens);
+
+  episodeTitleMeta.set(episodeId, {
+    normalizedTitle,
+    titleTokens,
+    titleTokenSet,
+  });
+
+  for (const token of titleTokenSet) {
+    titleTokenEpisodeFreq[token] = (titleTokenEpisodeFreq[token] ?? 0) + 1;
+  }
+}
+
+function episodeTitleMatchScore(query, context = queryLexicalContext(query)) {
+  const { qTokens, normalizedQuery, spanishDominant } = context;
+  const matches = new Map();
+  if (!qTokens.length || spanishDominant) return matches;
+
+  const meaningfulTokens = qTokens.filter(
+    token => token.length >= 3 && !TITLE_BOILERPLATE_WORDS.has(token)
+  );
+  if (!meaningfulTokens.length) return matches;
+
+  for (const [episodeId, meta] of episodeTitleMeta) {
+    const { normalizedTitle, titleTokenSet } = meta;
+    let score = 0;
+
+    // A complete title (or a multi-token substring of it) is explicit metadata intent.
+    if (normalizedQuery === normalizedTitle) {
+      score = 2;
+    } else if (qTokens.length >= 2 && normalizedTitle.includes(normalizedQuery)) {
+      score = 2;
+    } else {
+      const allMeaningfulPresent = meaningfulTokens.every(token => titleTokenSet.has(token));
+      const hasDistinctiveToken = meaningfulTokens.some(
+        token => (titleTokenEpisodeFreq[token] ?? Number.MAX_SAFE_INTEGER) <= 2
+      );
+
+      if (allMeaningfulPresent && hasDistinctiveToken) score = 1;
+    }
+
+    if (score > 0) matches.set(episodeId, score);
+  }
+
+  return matches;
+}
+
+function isLowInformationChunk(chunk) {
+  const normalized = normalizeText(chunk?.text ?? '');
+  if (!normalized) return true;
+  const tokens = tokenize(normalized);
+  return normalized.length < 24 || tokens.length <= 2;
+}
 
 function json(data, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(data), {
@@ -800,6 +874,7 @@ function rankLong10({
   const motif = detectHighConfidenceMotif(query);
   const motifInfo = matchingMotifEpisodes(motif);
   const lexicalContext = queryLexicalContext(query);
+  const titleMatches = episodeTitleMatchScore(query, lexicalContext);
 
   const baseValues = [...baseScores.values()];
   const baseFloor = baseValues.length ? Math.min(...baseValues) : 0;
@@ -814,6 +889,12 @@ function rankLong10({
   for (const index of tolerantLexicalCandidateIndices(query, lexicalContext)) {
     const chunk = long10Chunks[index];
     if (chunk) candidateIds.add(chunk.id);
+  }
+  for (const episodeId of titleMatches.keys()) {
+    for (const index of long10EpisodeChunkIndices[episodeId] ?? []) {
+      const chunk = long10Chunks[index];
+      if (chunk) candidateIds.add(chunk.id);
+    }
   }
   for (const episodeId of motifInfo.matches) {
     for (const index of long10EpisodeChunkIndices[episodeId] ?? []) {
@@ -830,6 +911,24 @@ function rankLong10({
     const chunk = long10Chunks[index];
     const char = characterScore(queryCharacters, chunk);
     if (queryCharacters.length > 0 && char < 1) continue;
+
+    const titleMatchScore = titleMatches.get(chunk.episode_id) ?? 0;
+    const exactMatch = exactLexicalMatch(query, index, lexicalContext);
+    const tolerantMatch = tolerantLexicalMatch(query, index, lexicalContext);
+    const motifMatch = motifInfo.matches.has(chunk.episode_id);
+    const motifOrigin = motifInfo.origin != null && chunk.episode_id === motifInfo.origin;
+
+    // Very short reaction-only chunks can be unstable semantic neighbors.
+    // Keep them when deterministic evidence explicitly selected them.
+    if (
+      isLowInformationChunk(chunk) &&
+      titleMatchScore === 0 &&
+      !exactMatch &&
+      !tolerantMatch &&
+      !motifMatch
+    ) {
+      continue;
+    }
 
     const baseKnown = baseScores.has(id);
     const baseSem = baseKnown ? baseScores.get(id) : baseFloor;
@@ -867,12 +966,13 @@ function rankLong10({
       semantic_heading_dialogue: sem,
       heading_gain: 0,
       lexical_score: lex,
-      exact_lexical_match: exactLexicalMatch(query, index, lexicalContext),
-      tolerant_lexical_match: tolerantLexicalMatch(query, index, lexicalContext),
+      title_match_score: titleMatchScore,
+      exact_lexical_match: exactMatch,
+      tolerant_lexical_match: tolerantMatch,
       character_score: char,
       penalty,
-      motif_match: motifInfo.matches.has(chunk.episode_id),
-      motif_origin: motifInfo.origin != null && chunk.episode_id === motifInfo.origin,
+      motif_match: motifMatch,
+      motif_origin: motifOrigin,
     };
 
     const current = byScene.get(chunk.scene_id);
@@ -887,6 +987,7 @@ function rankLong10({
       episode_id: scene.episode_id,
       title: scene.title,
       score: scene.score,
+      title_match_score: scene.title_match_score,
       exact_lexical_match: scene.exact_lexical_match,
       tolerant_lexical_match: scene.tolerant_lexical_match,
       motif_match: scene.motif_match,
