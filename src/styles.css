@@ -251,6 +251,13 @@ section {
   font-weight: 700;
 }
 
+.transcript-match-highlight {
+  padding: 0 0.08em;
+  color: inherit;
+  background: #6a5716;
+  border-radius: 3px;
+}
+
 .result-actions {
   margin-top: 14px;
 }

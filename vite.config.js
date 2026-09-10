@@ -28,7 +28,7 @@ export default defineConfig({
         theme_color: "#001040",
         background_color: "#070814",
 
-        display: "fullscreen",
+        display: "standalone",
         orientation: "portrait",
 
         start_url: "/fse/",

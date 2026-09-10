@@ -10,6 +10,7 @@ import { initializeSearch, searchFriends } from './search/searchClient.js';
 export default function App() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
+  const [searchedQuery, setSearchedQuery] = useState('');
   const [status, setStatus] = useState({ phase: 'idle', message: 'Sin inicializar' });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -39,6 +40,7 @@ export default function App() {
     try {
       const out = await searchFriends(normalizedQuery, { includeShort: true, limit: 10 });
       setResults(out.combined ?? out.long10 ?? []);
+      setSearchedQuery(normalizedQuery);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -49,6 +51,7 @@ export default function App() {
   function clearSearch() {
     setQuery('');
     setResults([]);
+    setSearchedQuery('');
     setError('');
   }
 
@@ -73,7 +76,7 @@ export default function App() {
         />
 
         <SearchStatus ready={ready} statusText={statusText} error={error} />
-        <ResultsSection results={results} />
+        <ResultsSection results={results} query={searchedQuery} />
         <ScrollArrow />
       </main>
     </>
