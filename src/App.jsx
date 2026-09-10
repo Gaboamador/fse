@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import Header from './components/Header';
+import EpisodeBrowser from './components/EpisodeBrowser';
+import EpisodeViewer from './components/EpisodeViewer';
 import ResultsSection from './components/ResultsSection';
 import ScrollArrow from './components/ScrollArrow';
 import SearchPanel from './components/SearchPanel';
@@ -11,6 +13,7 @@ export default function App() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [searchedQuery, setSearchedQuery] = useState('');
+  const [episodeRequest, setEpisodeRequest] = useState(null);
   const [status, setStatus] = useState({ phase: 'idle', message: 'Sin inicializar' });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -58,25 +61,45 @@ export default function App() {
   return (
     <>
       <Header />
-      
+
       <main className="shell">
         <p className="lede">
-          Buscá una escena por frase, recuerdo aproximado o descripción en inglés,
-          español o mezclando ambos. Si el primer resultado no es el que buscabas,
+          Buscá una escena por frase, recuerdo aproximado, descripción o título de episodio,
+          en inglés, español o mezclando ambos. Si el primer resultado no es el que buscabas,
           podés revisar las otras opciones.
         </p>
 
-        <SearchPanel
-          query={query}
-          onQueryChange={setQuery}
-          onSearch={runSearch}
-          onClear={clearSearch}
-          ready={ready}
-          busy={busy}
-        />
+        <div className="content-layout">
+          <div className="search-stack">
+            <SearchPanel
+              query={query}
+              onQueryChange={setQuery}
+              onSearch={runSearch}
+              onClear={clearSearch}
+              ready={ready}
+              busy={busy}
+            />
 
-        <SearchStatus ready={ready} statusText={statusText} error={error} />
-        <ResultsSection results={results} query={searchedQuery} />
+            <SearchStatus ready={ready} statusText={statusText} error={error} />
+          </div>
+
+          <EpisodeBrowser
+            activeEpisodeId={episodeRequest?.episodeId ?? null}
+            onOpenEpisode={setEpisodeRequest}
+          />
+
+          <div className="content-stack">
+            <ResultsSection
+              results={results}
+              query={searchedQuery}
+              onOpenEpisode={setEpisodeRequest}
+            />
+            <EpisodeViewer
+              request={episodeRequest}
+              onClose={() => setEpisodeRequest(null)}
+            />
+          </div>
+        </div>
         <ScrollArrow />
       </main>
     </>
