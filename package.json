@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "sass-embedded": "^1.104.0",
-    "vite-plugin-pwa": "^1.3.0"
+    "vite-plugin-pwa": "^1.3.0",
+    "wrangler": "^4.131.0"
   }
 }
