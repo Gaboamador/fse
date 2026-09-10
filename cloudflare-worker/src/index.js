@@ -180,6 +180,124 @@ function exactLexicalCandidateIndices(query, context = queryLexicalContext(query
   return (postings ?? []).filter(index => long10Normalized[index].includes(normalizedQuery));
 }
 
+
+function editDistanceAtMostOne(a, b) {
+  if (a === b) return true;
+  if (Math.abs(a.length - b.length) > 1) return false;
+
+  let i = 0;
+  let j = 0;
+  let edits = 0;
+
+  while (i < a.length && j < b.length) {
+    if (a[i] === b[j]) {
+      i++;
+      j++;
+      continue;
+    }
+
+    edits++;
+    if (edits > 1) return false;
+
+    if (a.length === b.length) {
+      i++;
+      j++;
+    } else if (a.length > b.length) {
+      i++;
+    } else {
+      j++;
+    }
+  }
+
+  if (i < a.length || j < b.length) edits++;
+  return edits <= 1;
+}
+
+function tolerantTokenSequenceMatch(queryTokens, textTokens) {
+  if (queryTokens.length < 3 || textTokens.length < 3) return false;
+
+  const maxQuerySkips = 1;
+  const maxTextSkips = 1;
+  const maxFuzzyTokens = 1;
+
+  function walk(qi, ti, querySkips, textSkips, fuzzyTokens) {
+    if (qi === queryTokens.length) return true;
+    if (ti === textTokens.length) {
+      return queryTokens.length - qi <= maxQuerySkips - querySkips;
+    }
+
+    const q = queryTokens[qi];
+    const t = textTokens[ti];
+
+    if (q === t && walk(qi + 1, ti + 1, querySkips, textSkips, fuzzyTokens)) {
+      return true;
+    }
+
+    if (
+      fuzzyTokens < maxFuzzyTokens &&
+      q.length >= 4 &&
+      t.length >= 4 &&
+      editDistanceAtMostOne(q, t) &&
+      walk(qi + 1, ti + 1, querySkips, textSkips, fuzzyTokens + 1)
+    ) {
+      return true;
+    }
+
+    if (querySkips < maxQuerySkips && walk(qi + 1, ti, querySkips + 1, textSkips, fuzzyTokens)) {
+      return true;
+    }
+
+    if (textSkips < maxTextSkips && walk(qi, ti + 1, querySkips, textSkips + 1, fuzzyTokens)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  const minRemaining = Math.max(3, queryTokens.length - maxQuerySkips);
+
+  for (let start = 0; start < textTokens.length; start++) {
+    if (textTokens.length - start < minRemaining) break;
+    if (walk(0, start, 0, 0, 0)) return true;
+  }
+
+  return false;
+}
+
+function tolerantLexicalCandidateIndices(query, context = queryLexicalContext(query)) {
+  const { qTokens, spanishDominant } = context;
+  if (qTokens.length < 3 || qTokens.length > 12 || spanishDominant) return [];
+
+  const uniqueTokens = [...new Set(qTokens)];
+  const indexed = uniqueTokens
+    .map(token => ({ token, postings: long10TokenPostings[token] ?? [] }))
+    .filter(entry => entry.postings.length > 0)
+    .sort((a, b) => a.postings.length - b.postings.length);
+
+  if (!indexed.length) return [];
+
+  const missingDistinctTokens = uniqueTokens.length - indexed.length;
+  if (missingDistinctTokens > 1) return [];
+
+  const anchorCandidates = new Set();
+  for (const entry of indexed.slice(0, 2)) {
+    for (const index of entry.postings) anchorCandidates.add(index);
+  }
+
+  const matches = [];
+  for (const index of anchorCandidates) {
+    const textTokens = tokenize(long10Normalized[index]);
+    if (tolerantTokenSequenceMatch(qTokens, textTokens)) matches.push(index);
+  }
+
+  return matches;
+}
+
+function tolerantLexicalMatch(query, chunkIndex, context = queryLexicalContext(query)) {
+  const { qTokens, spanishDominant } = context;
+  if (qTokens.length < 3 || qTokens.length > 12 || spanishDominant) return false;
+  return tolerantTokenSequenceMatch(qTokens, tokenize(long10Normalized[chunkIndex]));
+}
 function exactLexicalMatch(query, chunkIndex, context = queryLexicalContext(query)) {
   const { qTokens, spanishDominant, normalizedQuery } = context;
   if (!qTokens.length || qTokens.length > 12 || spanishDominant) return false;
@@ -553,6 +671,7 @@ function matchingMotifEpisodes(motif) {
 
 function compareRanked(a, b) {
   if (Boolean(a.exact_lexical_match) !== Boolean(b.exact_lexical_match)) return a.exact_lexical_match ? -1 : 1;
+  if (Boolean(a.tolerant_lexical_match) !== Boolean(b.tolerant_lexical_match)) return a.tolerant_lexical_match ? -1 : 1;
   if (Boolean(a.motif_origin) !== Boolean(b.motif_origin)) return a.motif_origin ? -1 : 1;
   if (Boolean(a.motif_match) !== Boolean(b.motif_match)) return a.motif_match ? -1 : 1;
   return b.score - a.score;
@@ -602,7 +721,7 @@ function contextualPenalty(chunk) {
 
 const GEMMA_MODEL = '@cf/google/embeddinggemma-300m';
 const VECTOR_TOP_K = 100;
-const BACKEND_ENGINE_VERSION = 'v10-gemma-full-long10-512-backend-v2';
+const BACKEND_ENGINE_VERSION = 'v10-gemma-full-long10-512-backend-v2-fuzzy-v3';
 
 const long10Chunks = FRIENDS_RUNTIME.chunks;
 const long10Normalized = FRIENDS_RUNTIME.normalized;
@@ -692,6 +811,10 @@ function rankLong10({
     const chunk = long10Chunks[index];
     if (chunk) candidateIds.add(chunk.id);
   }
+  for (const index of tolerantLexicalCandidateIndices(query, lexicalContext)) {
+    const chunk = long10Chunks[index];
+    if (chunk) candidateIds.add(chunk.id);
+  }
   for (const episodeId of motifInfo.matches) {
     for (const index of long10EpisodeChunkIndices[episodeId] ?? []) {
       const chunk = long10Chunks[index];
@@ -745,6 +868,7 @@ function rankLong10({
       heading_gain: 0,
       lexical_score: lex,
       exact_lexical_match: exactLexicalMatch(query, index, lexicalContext),
+      tolerant_lexical_match: tolerantLexicalMatch(query, index, lexicalContext),
       character_score: char,
       penalty,
       motif_match: motifInfo.matches.has(chunk.episode_id),
@@ -764,6 +888,7 @@ function rankLong10({
       title: scene.title,
       score: scene.score,
       exact_lexical_match: scene.exact_lexical_match,
+      tolerant_lexical_match: scene.tolerant_lexical_match,
       motif_match: scene.motif_match,
       motif_origin: scene.motif_origin,
       best_scene: scene,
