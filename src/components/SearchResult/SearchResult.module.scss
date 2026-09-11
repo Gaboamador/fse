@@ -1,0 +1,92 @@
+@use '../../styles/patterns';
+
+.resultCard {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 8px;
+
+  padding: 18px 0;
+
+  border-bottom: 1px solid #202020;
+}
+
+.resultCardPrimary {
+  grid-template-columns: 1fr;
+  padding-top: 12px;
+}
+
+.resultCardCompact {
+  padding: 16px 0;
+}
+
+.resultRank {
+  padding-top: 3px;
+  color: #555;
+  font-size: 14px;
+}
+
+.resultMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.resultMeta strong {
+  font-size: 13px;
+}
+
+.resultMeta span {
+  color: #aaa;
+}
+
+.sceneHeading {
+  margin-top: 7px;
+  color: #d7d7d7;
+  font-size: 14px;
+}
+
+.characters {
+  margin-top: 5px;
+  color: #777;
+  font-size: 12px;
+}
+
+.preview {
+  max-width: 850px;
+  margin: 12px 0 0;
+
+  color: #bcbcbc;
+  font-family: inherit;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.resultActions {
+  margin-top: 14px;
+}
+
+.secondaryButton {
+    @include patterns.secondaryButton;
+}
+
+.secondaryButton:hover {
+    @include patterns.secondaryButtonHover;
+}
+
+.secondaryButton:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+@media (max-width: 620px) {
+.resultCard {
+    grid-template-columns: 34px 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+.resultCardPrimary {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,4 +1,5 @@
-import SearchResult from '../SearchResult.jsx';
+import styles from './ResultsSection.module.scss';
+import SearchResult from '../SearchResult';
 
 export default function ResultsSection({ results, query, onOpenEpisode }) {
   const bestResult = results[0] ?? null;
@@ -7,8 +8,8 @@ export default function ResultsSection({ results, query, onOpenEpisode }) {
   if (!bestResult) return null;
 
   return (
-    <section className="results-section">
-      <div className="section-title">
+    <section>
+      <div className={styles.sectionTitle}>
         <h2>Mejor resultado</h2>
       </div>
 
@@ -20,10 +21,10 @@ export default function ResultsSection({ results, query, onOpenEpisode }) {
       />
 
       {alternatives.length > 0 && (
-        <details className="alternative-results">
+        <details className={styles.alternativeResults}>
           <summary>¿Este no es el episodio que buscabas? Ver otras opciones</summary>
 
-          <div className="alternative-list">
+          <div className={styles.alternativeList}>
             {alternatives.map((result, index) => (
               <SearchResult
                 key={`${result.episode_id}-${index}`}

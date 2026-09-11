@@ -1,0 +1,30 @@
+@use '../../styles/patterns';
+
+.statusLine {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+
+  margin: 12px 2px 20px;
+
+  color: #8f8f8f;
+  font-size: 13px;
+}
+
+.dot {
+  display: inline-block;
+
+  width: 8px;
+  height: 8px;
+
+  background: #666;
+  border-radius: 50%;
+}
+
+.dot.ok {
+  background: green;
+}
+
+.error {
+    @include patterns.errorBox;
+}

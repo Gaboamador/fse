@@ -11,10 +11,16 @@ const dotColors = [
   styles.dotBlue,
 ];
 
-export default function Header() {
+export default function Header({ episodeContext = null }) {
+  const hasEpisodeContext = Boolean(episodeContext);
+
   return (
     <header className={styles.header}>
-      <div className={styles.inner}>
+      <div
+        className={`${styles.inner} ${
+          hasEpisodeContext ? styles.hasEpisodeContext : ''
+        }`}
+      >
         <div className={styles.title}>
           <div className={styles.friendsWord} aria-label="Friends">
             {friendsLetters.map((letter, index) => (
@@ -34,6 +40,23 @@ export default function Header() {
           <div className={styles.searchEngine}>
             SEARCH ENGINE
           </div>
+        </div>
+
+        <div
+          className={`${styles.episodeContext} ${
+            hasEpisodeContext ? styles.episodeContextVisible : ''
+          }`}
+          aria-hidden={!hasEpisodeContext}
+        >
+          {episodeContext ? (
+            <>
+              <strong>{episodeContext.episodeId}</strong>
+              {' · '}
+              {episodeContext.title}
+            </>
+          ) : (
+            '\u00A0'
+          )}
         </div>
       </div>
     </header>

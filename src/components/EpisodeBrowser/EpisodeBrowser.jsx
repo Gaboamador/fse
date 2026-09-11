@@ -1,3 +1,4 @@
+import styles from './EpisodeBrowser.module.scss';
 import { useMemo, useState } from 'react';
 
 import { loadCorpus } from '../../data/friendsCorpus.js';
@@ -51,33 +52,33 @@ export default function EpisodeBrowser({ activeEpisodeId = null, onOpenEpisode }
   }
 
   return (
-    <aside className="episode-browser" aria-label="Explorar episodios">
+    <aside className={styles.episodeBrowser} aria-label="Explorar episodios">
       <button
         type="button"
-        className={`episode-browser-toggle ${open ? 'episode-browser-toggle-active' : ''}`}
+        className={`${styles.episodeBrowserToggle} ${open ? styles.episodeBrowserToggleActive : ''}`}
         onClick={toggleBrowser}
       >
         {open ? 'Ocultar episodios' : 'Explorar temporadas y episodios'}
       </button>
 
       {open && (
-        <div className="episode-browser-panel">
-          {loading && <div className="episode-browser-status">Cargando episodios…</div>}
-          {error && <div className="episode-error">{error}</div>}
+        <div className={styles.episodeBrowserPanel}>
+          {loading && <div className={styles.episodeBrowserStatus}>Cargando episodios…</div>}
+          {error && <div className={styles.episodeError}>{error}</div>}
 
           {!loading && !error && seasons.length > 0 && (
-            <div className="season-list">
+            <div className={styles.seasonList}>
               {seasons.map(([season, seasonEpisodes]) => (
-                <details className="season-group" key={season}>
+                <details className={styles.seasonGroup} key={season}>
                   <summary>
                     Temporada {season}
                     <span>{seasonEpisodes.length} episodios</span>
                   </summary>
-                  <div className="episode-list">
+                  <div className={styles.episodeList}>
                     {seasonEpisodes.map((episode) => (
                       <button
                         type="button"
-                        className={`episode-list-item ${activeEpisodeId === episode.id ? 'episode-list-item-active' : ''}`}
+                        className={`${styles.episodeListItem} ${activeEpisodeId === episode.id ? styles.episodeListItemActive : ''}`}
                         key={episode.id}
                         onClick={() => selectEpisode(episode)}
                       >

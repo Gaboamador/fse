@@ -1,3 +1,4 @@
+import styles from './TranscriptText.module.scss';
 import React from 'react';
 
 import { resolveCanonicalSpeaker } from '../../data/canonicalSpeakers';
@@ -133,7 +134,7 @@ function highlightTranscriptText(text, query) {
   ranges.forEach((range, index) => {
     if (range.start > cursor) parts.push(source.slice(cursor, range.start));
     parts.push(
-      <mark className="transcript-match-highlight" key={`match-${index}-${range.start}`}>
+      <mark className={styles.transcriptMatchHighlight} key={`match-${index}-${range.start}`}>
         {source.slice(range.start, range.end)}
       </mark>
     );
@@ -174,7 +175,7 @@ export default function TranscriptText({ transcript, query = '' }) {
 
       return (
         <React.Fragment key={index}>
-          <span className="transcript-speaker">{canonicalSpeaker}:</span>
+          <span className={styles.transcriptSpeaker}>{canonicalSpeaker}:</span>
           {' '}
           {highlightTranscriptText(dialogue, query)}
           {'\n'}

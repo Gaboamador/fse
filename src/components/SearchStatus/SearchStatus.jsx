@@ -1,12 +1,13 @@
+import styles from './SearchStatus.module.scss';
 export default function SearchStatus({ ready, statusText, error }) {
   return (
     <>
-      <div className="status-line">
-        <span className={`dot ${ready ? 'ok' : ''}`} />
+      <div className={styles.statusLine}>
+        <span className={`${styles.dot} ${ready ? styles.ok : ''}`} />
         {statusText}
       </div>
 
-      {error && <div className="error">{error}</div>}
+      {error && <div className={styles.error}>{error}</div>}
     </>
   );
 }

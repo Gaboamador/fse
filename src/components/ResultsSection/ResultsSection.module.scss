@@ -1,0 +1,51 @@
+.sectionTitle {
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+  justify-content: space-between;
+
+  margin-bottom: 8px;
+
+  border-bottom: 1px solid #292929;
+}
+
+.sectionTitle h2 {
+  margin: 0 0 10px;
+  font-size: 20px;
+}
+
+.alternativeResults {
+  margin-top: 18px;
+  border-top: 1px solid #242424;
+}
+
+.alternativeResults > summary {
+  padding: 18px 0;
+
+  color: #999;
+  font-size: 14px;
+
+  cursor: pointer;
+  list-style-position: inside;
+}
+
+.alternativeResults > summary:hover {
+  color: #ddd;
+}
+
+.alternativeList {
+  border-top: 1px solid #202020;
+}
+
+@media (max-width: 620px) {
+.sectionTitle {
+    flex-direction: column;
+    gap: 0;
+    align-items: flex-start;
+  }
+
+.sectionTitle h2 {
+    margin: 10px 0;
+    font-size: 20px;
+  }
+}

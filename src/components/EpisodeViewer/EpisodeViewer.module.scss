@@ -1,0 +1,151 @@
+@use '../../styles/patterns';
+
+.episodeError {
+    @include patterns.errorBox;
+}
+
+.jumpToMatch {
+    @include patterns.secondaryButton;
+}
+
+.jumpToMatch:hover {
+    @include patterns.secondaryButtonHover;
+}
+
+.fullEpisode {
+  margin-top: 20px;
+
+  background: #111;
+  border: 1px solid #292929;
+  border-radius: 14px;
+
+  overflow: hidden;
+}
+
+.fullEpisodeHeader {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 14px 16px;
+
+  background: rgba(17, 17, 17, 0.96);
+  border-bottom: 1px solid #292929;
+
+  backdrop-filter: blur(8px);
+}
+
+.fullEpisodeKicker {
+  color: #666;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+}
+
+.fullEpisodeHeader h3 {
+  margin: 4px 0 0;
+  font-size: 16px;
+}
+
+.fullTranscript {
+  padding: 4px 16px 22px;
+}
+
+.transcriptScene {
+  margin-top: 0;
+  padding: 18px 0;
+
+  border-bottom: 1px solid #202020;
+
+  scroll-margin-top: 78px;
+
+  transition: background 0.6s ease;
+}
+
+.transcriptScene:last-child {
+  border-bottom: 0;
+}
+
+.transcriptScene h4 {
+  margin: 0 0 10px;
+
+  color: #d1d1d1;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.transcriptScene pre {
+  margin: 0;
+
+  color: #aaa;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.transcriptSceneMatch {
+  margin-right: -10px;
+  margin-left: -10px;
+
+  padding-right: 10px;
+  padding-left: 10px;
+
+  border-radius: 8px;
+}
+
+.transcriptSceneMatch h4 {
+  color: #fff;
+}
+
+.transcriptSceneHighlight {
+  background: #2a2a2a;
+  transition-duration: 0.15s;
+}
+
+@media (max-width: 620px) {
+.fullEpisodeHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 620px) {
+.jumpToMatch {
+    width: 100%;
+  }
+}
+
+.episodeViewer {
+  scroll-margin-top: 12px;
+}
+
+.fullEpisodeActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.episodeViewerStatus {
+  padding: 18px 16px;
+  color: #888;
+  font-size: 14px;
+}
+
+@media (max-width: 620px) {
+.fullEpisodeActions {
+    width: 100%;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 620px) {
+.fullEpisodeActions .jumpToMatch {
+    width: 100%;
+  }
+}
